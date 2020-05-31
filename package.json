@@ -9,6 +9,7 @@
   "author": "Benton Edmondson",
   "license": "ISC",
   "dependencies": {
+    "moment": "^2.26.0",
     "twit": "^2.2.11"
   }
 }

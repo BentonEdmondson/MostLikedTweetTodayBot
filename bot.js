@@ -1,4 +1,5 @@
 const twit = require('twit');
+const moment = require('moment');
 const keys = require('./keys.json');
 
 const T = new twit(keys);
@@ -24,6 +25,7 @@ let mostLikedTweet = async (minLikes, maxLikes, since, until) => {
 
 (async () => {
 
-    console.log(`Most liked tweet: https://twitter.com/username/status/${(await mostLikedTweet(0, 1000000, '2020-5-27', '2020-5-28')).id_str}`);
+    let mostLikedTweetOfToday = await mostLikedTweet(0, 1000000, moment().subtract(1, 'days').format('YYYY-M-D'), moment().format('YYYY-M-D'));
+    console.log(`Most liked tweet: https://twitter.com/username/status/${mostLikedTweetOfToday.id_str}`);
 
 })();
