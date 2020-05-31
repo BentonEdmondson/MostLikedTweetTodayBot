@@ -4,6 +4,7 @@ module.exports = async (req, res) => {
     const twit = require('twit');
     const moment = require('moment');
     const schedule = require('node-schedule');
+    const specimen = process.env.VERCEL_GITHUB_COMMIT_REF;
 
     const T = new twit({
         consumer_key: process.env.consumer_key,
@@ -15,19 +16,19 @@ module.exports = async (req, res) => {
     let getTweet = async (parameters) => {
         if (parameters.specimenMin === parameters.specimenMax) { console.error('Found nothing...'); return; }
         let specimenGuess = Math.trunc((parameters.specimenMin + parameters.specimenMax) / 2);
-        console.log(`Searching from ${parameters.specimenMin} to ${parameters.specimenMax} ${process.env.specimen}. I'm guessing ${specimenGuess}.`);
+        console.log(`Searching from ${parameters.specimenMin} to ${parameters.specimenMax} ${specimen}. I'm guessing ${specimenGuess}.`);
         let tweets = (await T.get('search/tweets', {
             q: `${({
                 likes: 'min_faves',
                 retweets: 'min_retweets'
-            })[process.env.specimen]}:${specimenGuess} lang:en since:${parameters.since} until:${parameters.until}`,
+            })[specimen]}:${specimenGuess} lang:en since:${parameters.since} until:${parameters.until}`,
             count: 100 // 100 is the maximum
         })).data.statuses;
-        console.log(`Number of tweets found above ${specimenGuess} ${process.env.specimen}: ${tweets.length}.`);
+        console.log(`Number of tweets found above ${specimenGuess} ${specimen}: ${tweets.length}.`);
         let specimenProperty = ({
             likes: 'favorite_count',
             retweets: 'retweet_count',
-        })[process.env.specimen];
+        })[specimen];
         if (tweets.length < 100 && tweets.length > 0) return tweets.reduce((acc, cur) => {
             if (cur[specimenProperty] > acc[specimenProperty]) return cur;
             else return acc;
@@ -54,13 +55,13 @@ module.exports = async (req, res) => {
             since: moment().subtract(1, 'days').format('YYYY-MM-D'),
             until: moment().format('YYYY-M-D')
         });
-        console.log(`Tweet with the most ${process.env.specimen} on ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}:
+        console.log(`Tweet with the most ${specimen} on ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}:
             https://twitter.com/username/status/${tweet.id_str}`);
 
         try {
             // reply to the tweet
             await T.post('statuses/update', {
-                status: `This is the most ${process.env.specimen} tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${tweet.user.screen_name}.`,
+                status: `This is the most ${specimen} tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${tweet.user.screen_name}.`,
                 in_reply_to_status_id: tweet.id_str
             });
             // retweet the tweet
