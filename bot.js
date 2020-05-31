@@ -25,7 +25,16 @@ let mostLikedTweet = async (minLikes, maxLikes, since, until) => {
 
 (async () => {
 
-    let mostLikedTweetOfToday = await mostLikedTweet(0, 1000000, moment().subtract(1, 'days').format('YYYY-M-D'), moment().format('YYYY-M-D'));
+    let mostLikedTweetOfToday = await mostLikedTweet(0, 3000000, moment().subtract(1, 'days').format('YYYY-M-D'), moment().format('YYYY-M-D'));
     console.log(`Most liked tweet: https://twitter.com/username/status/${mostLikedTweetOfToday.id_str}`);
+    // reply to the tweet
+    T.post('statuses/update', {
+        status: `@${mostLikedTweetOfToday.user.screen_name} This is the most liked tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do')}!`,
+        in_reply_to_status_id: mostLikedTweetOfToday.id_str
+    });
+    // retweet the tweet
+    T.post('statuses/retweet/:id', {
+        id: mostLikedTweetOfToday.id_str
+    });
 
 })();
