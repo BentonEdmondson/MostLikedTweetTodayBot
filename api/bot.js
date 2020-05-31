@@ -1,4 +1,5 @@
-module.exports = async () => {
+module.exports = async (req, res) => {
+    res.status(200).json({ message: 'Thanks for kicking this off!' })
 
     const twit = require('twit');
     const moment = require('moment');
@@ -68,7 +69,8 @@ module.exports = async () => {
             });
 
         } catch (e) {
-            console.log(`There was an error in retweeting or commenting on the tweet. Odds are this is simply due to the tweet already having been retweeted or commented on.`);
+            console.log(`There was an error in retweeting or commenting on the tweet.`);
+            console.log(e);
         }
 
     });
