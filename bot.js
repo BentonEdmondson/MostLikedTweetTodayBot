@@ -1,5 +1,6 @@
 const twit = require('twit');
 const moment = require('moment');
+const schedule = require('node-schedule');
 const keys = require('./keys.json');
 
 const T = new twit(keys);
@@ -22,14 +23,13 @@ let mostLikedTweet = async (minLikes, maxLikes, since, until) => {
 }
 
 
+schedule.scheduleJob('1 0 * * *', retweet = async () => {
 
-(async () => {
-
-    let mostLikedTweetOfToday = await mostLikedTweet(0, 3000000, moment().subtract(1, 'days').format('YYYY-M-D'), moment().format('YYYY-M-D'));
+    let mostLikedTweetOfToday = await mostLikedTweet(0, 2000000, moment().subtract(1, 'days').format('YYYY-M-D'), moment().format('YYYY-M-D'));
     console.log(`Most liked tweet: https://twitter.com/username/status/${mostLikedTweetOfToday.id_str}`);
     // reply to the tweet
     T.post('statuses/update', {
-        status: `@${mostLikedTweetOfToday.user.screen_name} This is the most liked tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do')}!`,
+        status: `This is the most liked tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${mostLikedTweetOfToday.user.screen_name}.`,
         in_reply_to_status_id: mostLikedTweetOfToday.id_str
     });
     // retweet the tweet
@@ -37,4 +37,5 @@ let mostLikedTweet = async (minLikes, maxLikes, since, until) => {
         id: mostLikedTweetOfToday.id_str
     });
 
-})();
+});
+retweet();
