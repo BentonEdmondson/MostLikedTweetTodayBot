@@ -3,7 +3,7 @@ const twit = require('twit');
 const moment = require('moment');
 const schedule = require('node-schedule');
 
-console.log('bot.js is running');
+console.log('bot.js is running.');
 
 const twitterAccounts = {
     'likes': new twit({
@@ -19,6 +19,9 @@ const twitterAccounts = {
         access_token_secret: process.env.RETWEETS_ACCESS_TOKEN_SECRET
     })
 }
+
+const originalSpecimenMax = 2000000;
+const originalSpecimenMin = 0;
 
 let getTweet = async parameters => {
     if (parameters.specimenMin === parameters.specimenMax) { console.error('Found nothing...'); return; }
@@ -48,22 +51,33 @@ let getTweet = async parameters => {
         until: parameters.until,
         T: parameters.T
     });
-    else if (tweets.length >= 100) return await getTweet({
-        specimen: parameters.specimen,
-        specimenMin: specimenGuess,
-        specimenMax: parameters.specimenMax,
-        since: parameters.since,
-        until: parameters.until,
-        T: parameters.T
-    });
+    else if (tweets.length >= 100) {
+        if (specimenGuess / originalSpecimenMax < 0.8) return await getTweet({
+            specimen: parameters.specimen,
+            specimenMin: specimenGuess,
+            specimenMax: parameters.specimenMax,
+            since: parameters.since,
+            until: parameters.until,
+            T: parameters.T
+        });
+    } else {
+        return await getTweet({
+            specimen: parameters.specimen,
+            specimenMin: specimenGuess,
+            specimenMax: Math.floor(parameters.specimenMax * 1.5),
+            since: parameters.since,
+            until: parameters.until,
+            T: parameters.T
+        });
+    }
 }
 
 retweetTweetOfToday = async specimen => {
 
     let tweet = await getTweet({
         specimen: specimen,
-        specimenMin: 0,
-        specimenMax: 2000000,
+        specimenMin: originalSpecimenMin,
+        specimenMax: originalSpecimenMax,
         since: moment().subtract(1, 'days').format('YYYY-MM-D'),
         until: moment().format('YYYY-M-D'),
         T: twitterAccounts[specimen]
