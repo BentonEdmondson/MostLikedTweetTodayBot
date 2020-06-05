@@ -88,16 +88,14 @@ retweetTweetOfToday = async specimen => {
     try {
         // reply to the tweet
         await twitterAccounts[specimen].post('statuses/update', {
-            status: `This is the most ${specimen} tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${tweet.user.screen_name}.`,
-            in_reply_to_status_id: tweet.id_str
-        });
-        // retweet the tweet
-        await twitterAccounts[specimen].post('statuses/retweet/:id', {
-            id: tweet.id_str
+            status: `This is the most ` +
+                { likes: 'liked', retweets: 'retweeted' }[specimen] +
+                ` tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${tweet.user.screen_name}.` +
+                ` https://twitter.com/username/status/${tweet.id_str}`
         });
 
     } catch (e) {
-        console.log(`There was an error in retweeting or commenting on the tweet:`);
+        console.log(`There was an error in quoting the tweet:`);
         console.log(`\t${e.message}`);
     }
 
