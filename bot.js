@@ -90,7 +90,7 @@ retweetTweetOfToday = async specimen => {
         await twitterAccounts[specimen].post('statuses/update', {
             status: `This is the most ` +
                 { likes: 'liked', retweets: 'retweeted' }[specimen] +
-                ` tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}, @${tweet.user.screen_name}.` +
+                ` tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}.` +
                 ` https://twitter.com/username/status/${tweet.id_str}`
         });
 
