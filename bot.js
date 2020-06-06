@@ -101,8 +101,7 @@ retweetTweetOfToday = async specimen => {
 
 }
 
-retweetTweetOfToday('likes');
 schedule.scheduleJob('1 0 * * *', () => {
     retweetTweetOfToday('likes');
+    retweetTweetOfToday('retweets');
 });
-//retweetTweetOfToday('retweets');
