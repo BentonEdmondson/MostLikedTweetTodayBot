@@ -83,7 +83,7 @@ retweetTweetOfToday = async specimen => {
         T: twitterAccounts[specimen]
     });
     console.log(`Tweet with the most ${specimen} on ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}:
-        https://twitter.com/username/status/${tweet.id_str}`);
+        https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`);
 
     try {
         // reply to the tweet
@@ -91,7 +91,7 @@ retweetTweetOfToday = async specimen => {
             status: `This is the most ` +
                 { likes: 'liked', retweets: 'retweeted' }[specimen] +
                 ` tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}.` +
-                ` https://twitter.com/username/status/${tweet.id_str}`
+                ` https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`
         });
 
     } catch (e) {
