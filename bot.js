@@ -86,7 +86,7 @@ retweetTweetOfToday = async specimen => {
         https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`);
 
     try {
-        // reply to the tweet
+        // retweet the tweet
         await twitterAccounts[specimen].post('statuses/update', {
             status: `This is the most ` +
                 { likes: 'liked', retweets: 'retweeted' }[specimen] +
