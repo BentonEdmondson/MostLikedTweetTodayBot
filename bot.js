@@ -6,13 +6,13 @@ const schedule = require('node-schedule');
 console.log('bot.js is running.');
 
 const twitterAccounts = {
-    'likes': new twit({
+    likes: new twit({
         consumer_key: process.env.LIKES_CONSUMER_KEY,
         consumer_secret: process.env.LIKES_CONSUMER_SECRET,
         access_token: process.env.LIKES_ACCESS_TOKEN,
         access_token_secret: process.env.LIKES_ACCESS_TOKEN_SECRET
     }),
-    'retweets': new twit({
+    retweets: new twit({
         consumer_key: process.env.RETWEETS_CONSUMER_KEY,
         consumer_secret: process.env.RETWEETS_CONSUMER_SECRET,
         access_token: process.env.RETWEETS_ACCESS_TOKEN,
@@ -28,23 +28,25 @@ let getTweet = async parameters => {
         if (parameters.specimenMin === parameters.specimenMax) throw new Error('No tweets were found.');
         let specimenGuess = Math.trunc((parameters.specimenMin + parameters.specimenMax) / 2);
         console.log(`Searching from ${parameters.specimenMin} to ${parameters.specimenMax} ${parameters.specimen}. I'm guessing ${specimenGuess}.`);
-        let tweets = (await parameters.T.get('search/tweets', {
+        let query = {
             q: `${({
                 likes: 'min_faves',
                 retweets: 'min_retweets'
             })[parameters.specimen]}:${specimenGuess} lang:en since:${parameters.since} until:${parameters.until}`,
             count: 100 // 100 is the maximum
-        })).data.statuses;
+        };
+        console.log(`Query: ${JSON.stringify(query)}`);
+        let tweets = (await parameters.T.get('search/tweets', query)).data.statuses;
         console.log(`Number of tweets found above ${specimenGuess} ${parameters.specimen}: ${tweets.length}.`);
         let specimenProperty = ({
             likes: 'favorite_count',
             retweets: 'retweet_count',
         })[parameters.specimen];
-        if (tweets.length < 100 && tweets.length > 0) return tweets.reduce((acc, cur) => {
+        if (tweets.length < 100 && tweets.length > 10) return tweets.reduce((acc, cur) => {
             if (cur[specimenProperty] > acc[specimenProperty]) return cur;
             else return acc;
         }, { [specimenProperty]: -1 });
-        else if (tweets.length === 0) return await getTweet({
+        else if (tweets.length <= 10) return await getTweet({
             specimen: parameters.specimen,
             specimenMin: parameters.specimenMin,
             specimenMax: specimenGuess,
@@ -80,8 +82,8 @@ retweetTweetOfToday = async specimen => {
             specimen: specimen,
             specimenMin: originalSpecimenMin,
             specimenMax: originalSpecimenMax,
-            since: moment().subtract(1, 'days').format('YYYY-MM-D'),
-            until: moment().format('YYYY-M-D'),
+            since: moment().subtract(1, 'days').format('YYYY-MM-DD'),
+            until: moment().format('YYYY-MM-DD'),
             T: twitterAccounts[specimen]
         });
         console.log(`Tweet with the most ${specimen} on ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}:
@@ -89,9 +91,9 @@ retweetTweetOfToday = async specimen => {
 
         // retweet the tweet
         await twitterAccounts[specimen].post('statuses/update', {
-            status: `This is the most ` +
+            status: `This was the most ` +
                 { likes: 'liked', retweets: 'retweeted' }[specimen] +
-                ` tweet of ${moment().subtract(1, 'days').format('dddd, MMMM Do YYYY')}.` +
+                ` tweet of the past 24 hours.` +
                 ` https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`
         });
         console.log(`The tweet has been successfully retweeted.`);
@@ -101,7 +103,7 @@ retweetTweetOfToday = async specimen => {
     }
 }
 
-schedule.scheduleJob('1 0 * * *', () => {
-    retweetTweetOfToday('likes');
-    retweetTweetOfToday('retweets');
+schedule.scheduleJob('1 0 * * *', async () => {
+    await retweetTweetOfToday('likes');
+    await retweetTweetOfToday('retweets');
 });
